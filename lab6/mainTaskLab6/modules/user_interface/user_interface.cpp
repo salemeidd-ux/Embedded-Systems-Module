@@ -138,11 +138,21 @@ static void userInterfaceMatrixKeypadUpdate()
         if ( numberOfCodeChars < CODE_NUMBER_OF_KEYS ) {
             codeSequenceFromUserInterface[numberOfCodeChars] = keyReleased;
             numberOfCodeChars++;
+
+            char codeLine[21] = "Code:               ";
+            for( int i = 0; i < numberOfCodeChars; i++ ) {
+                codeLine[6 + i] = codeSequenceFromUserInterface[i];
+            }
+            displayCharPositionWrite( 0,3 );
+            displayStringWrite( codeLine );
         }
     } else if( keyReleased == '*' ) {
         numberOfCodeChars = 0;
         codeComplete = false;
         incorrectCodeStateWrite(OFF);
+
+        displayCharPositionWrite( 0,3 );
+        displayStringWrite( "Code cleared        " );
     } else if( keyReleased == '#' ) {
         if ( numberOfCodeChars == CODE_NUMBER_OF_KEYS ) {
             codeComplete = true;
@@ -150,6 +160,9 @@ static void userInterfaceMatrixKeypadUpdate()
             incorrectCodeStateWrite(ON);
         }
         numberOfCodeChars = 0;
+
+        displayCharPositionWrite( 0,3 );
+        displayStringWrite( "Enter 5 digits + #  " );
     }
 }
 
@@ -224,6 +237,10 @@ static void userInterfaceDisplayUpdate()
             displayStringWrite( "System blocked      " );
         } else if ( incorrectCodeStateRead() ) {
             displayStringWrite( "Wrong code, retry   " );
+        } else if ( sirenStateRead() && numberOfCodeChars > 0 ) {
+            sprintf( lineBuffer, "Code: %-5.*s        ",
+                     numberOfCodeChars, codeSequenceFromUserInterface );
+            displayStringWrite( lineBuffer );
         } else {
             displayStringWrite( "Enter 5 digits + #  " );
         }
